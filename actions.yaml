@@ -1,0 +1,32 @@
+name: 'Upload Release Asset'
+description: 'Upload Release Asset'
+inputs:
+  token:
+    description: 'Github Access Token'
+    required: true
+    default: ${{ github.token }}
+  owner:
+    description: 'Repository Owner'
+    required: true
+    default: ${{ github.repository_owner }}
+  repo:
+    description: 'Repository Name'
+    required: true
+  ref:
+    description: 'Released Github Ref'
+    required: true
+    default: ${{ github.ref }}
+  path:
+    description: 'Asset File Path'
+    required: true
+    default: ${{ github.workspace }}
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        tag=$(echo ${{ inputs.ref }} | sed -r  "s ^refs/tags/(.*) \1 g")
+        for var in $(ls ${{ inputs.path }}); do
+            $GITHUB_ACTION_PATH/upload_github_release_asset.sh owner=${{ inputs.owner }} repo=${{ inputs.repo }}  tag=$tag filename=$var github_api_token=${{ inputs.token }}
+            sleep 0.5
+        done
